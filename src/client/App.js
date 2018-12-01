@@ -1,23 +1,71 @@
 import React, { Component } from 'react';
 import './app.css';
-import ReactImage from './react.png';
+import Timer from './timer.js'
+import Icon from './icon.js'
 
 export default class App extends Component {
-  state = { username: null };
+  constructor(props) {
+    super(props);
+    this.state = {
+      todos: [],
+      showTimer: true,
+    }
+  }
 
   componentDidMount() {
     fetch('/api/getUsername')
       .then(res => res.json())
-      .then(user => this.setState({ username: user.username }));
+      .then(( data ) => {
+        return this.setState({ todos: data.todos })
+      });
+  }
+
+  toggleTimer() {
+    this.setState({
+      showTimer: !this.state.showTimer,
+    })
   }
 
   render() {
-    const { username } = this.state;
+    const todos = this.state.todos
+      ? this.state.todos.map((todo, index) => {
+          return (
+            <div key={todo.id} style={styles.container}>
+              { Icon(todo.completed) }
+              <div style={styles.item}>{ todo.title }</div>
+            </div>
+          );
+        })
+      : ( 'Loading ...' );
+
     return (
       <div>
-        {username ? <h1>{`Hello ${username}`}</h1> : <h1>Loading.. please wait!</h1>}
-        <img src={ReactImage} alt="react" />
+        <h1> { this.props.title }</h1>
+        {(
+          this.state.showTimer
+           ?  (<Timer
+               start={500}
+              />)
+           : null
+        )}
+        <div>
+          { todos }
+        </div>
+        <button onClick={this.toggleTimer.bind(this)}> Toggle Timer </button>
       </div>
     );
+  }
+}
+
+const styles = {
+  container: {
+    marginLeft: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+  },
+  item: {
+    padding: '10px',
   }
 }
